@@ -110,29 +110,56 @@ def get_activity_by_type():
 
 
 def get_activity_by_participants():
-    """
-    Get activity suggestions based on number of participants
-
+    """Get activity suggestions based on number of participants
     API: https://bored-api.appbrewery.com/filter?participants={number}
     """
+    try:
+        participants = int(input("\nEnter number of participants: "))
+        if participants < 1:
+            print("number must be at least 1.")
+            return
+
+        response = requests.get(
+            f"https://bored-api.appbrewery.com/filter?participants={participants}"
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if not data:
+            print("No activities found for that number of participants.")
+            return
+
+        activity = random.choice(data)
+        print("\nActivity Suggestion:")
+        print(f"Activity: {activity['activity']}")
+        print(f"Type: {activity['type']}")
+        print(f"Participants: {activity['participants']}")
+
+        save_option(activity)
+
+    except ValueError:
+        print("please enter a valid number.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching activity by participants: {e}")
     # YOUR CODE HERE
     # 1. Ask user how many participants
     # 2. Make API request with participants parameter
     # 3. Display the activity suggestion
-    pass
 
 
 # Function 5: Save Favorite Activity
 def save_favorite_activity():
-    """
-    Get an activity and save it to a text file
-    """
+    """Get an activity and save it to a text file"""
+    choice = input("Do you want to save this activity? (y/n): ").lower()
+    if choice == "y":
+        favorite_activities.append(activity["activity"])
+        save_to_file(activity["activity"])
+        print("activity saved!")
     # YOUR CODE HERE
     # 1. after getting an activity from one of the other functions
     # 2. Ask user if they want to save it
     # 3. If yes, append to 'favorite_activities' list
     # 4. Print "Activity Saved"
-    pass
 
 
 # Function 6: View Saved Activities
@@ -140,9 +167,15 @@ def view_saved_activities():
     """
     Read and display saved activities from file
     """
+    if not favorite_activities:
+        print("\nNo saved activities yet!")
+        return
+
+    print("\nYour saved activities:")
+    for idx, act in enumerate(favorite_activities, 1):
+        print(f"{idx}. {act}")
     # YOUR CODE HERE
     # Loop through the list of saved activities and display each one
-    pass
 
 
 # Main Function & Menu System
@@ -156,14 +189,15 @@ def show_menu():
     print("1. Get a random activity")
     print("2. Get activity by type")
     print("3. Get activity by participants")
-    print("4. Save my favorite activities")
-    print("5. View my saved activities")
-    print("6. Exit")
+    print("4. View my saved activities")
+    print("5. Exit")
 
 
 def main():
     """Main function with menu loop"""
     print("Welcome to the Bored Activity Finder!")
+
+    load_favorites()
 
     while True:
         show_menu()
@@ -193,6 +227,8 @@ def main():
             print("\n\nGoodbye!")
             break
 
+
+# ===========Run App==============#
 
 if __name__ == "__main__":
     main()
