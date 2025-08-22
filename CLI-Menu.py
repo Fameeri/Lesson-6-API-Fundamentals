@@ -27,37 +27,83 @@ def save_to_file(activity):
         f.write(activity + "\n")
 
 
+# ================Activity Function============#     # YOUR CODE HERE
+# 1. Make a GET request to the API
+# 2. Parse the JSON response
+# 3. Print the activity and type nicely
+# 4. Handle any errors
 def get_random_activity():
-    """
-    Get a completely random activity suggestion
-
+    """Get a completely random activity suggestion
     API: https://bored-api.appbrewery.com/random
     """
-    # YOUR CODE HERE
-    # 1. Make a GET request to the API
-    # 2. Parse the JSON response
-    # 3. Print the activity and type nicely
-    # 4. Handle any errors
-    pass
+    try:
+        response = requests.get("https://bored-api.appbrewery.com/random")
+        response.raise_for_status()
+        data = response.json()
+
+        print("\nRandom Activity Suggestion:")
+        print(f"Activity: {data['activity']}")
+        print(f"Type: {data['type']}")
+        print(f"Participants: {data['participants']}")
+
+        save_option(data)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching random activity: {e}")
 
 
 # Function 2: Get Activity by Type
 
 
 def get_activity_by_type():
-    """
-    Let user choose an activity type and get a suggestion
-
+    """Let user choose an activity type and get a suggestion
     API: https://bored-api.appbrewery.com/filter?type={type}
-
     Types: education, recreational, social, diy, charity, cooking, relaxation, music, busywork
     """
+    activity_types = [
+        "education",
+        "recreational",
+        "social",
+        "diy",
+        "charity",
+        "cooking",
+        "relaxation",
+        "music",
+        "busywork",
+    ]
+    print("\nAvailable types:", ",".join(activity_types))
+    chosen_type = input("Enter a type: ").lower().strip()
+
+    if chosen_type not in activity_types:
+        print("Invalid type! please choose from the list.")
+        return
+
+    try:
+        response = requests.get(
+            f"https://bored-api.appbrewery.com/filter?type={chosen_type}"
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if not data:
+            print("No activities found for this type.")
+            return
+
+        activity = random.choice(data)
+        print("\nActivity Suggestion:")
+        print(f"Activity: {activity['activity']}")
+        print(f"Type: {activity['type']}")
+        print(f"Participants: {activity['participants']}")
+
+        save_option(activity)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching activity by type: {e}")
     # YOUR CODE HERE
     # 1. Show the user available types
     # 2. Get their choice
     # 3. Make API request with type parameter
     # 4. Display the result
-    pass
 
 
 # Function 3: Get Activity by Participants
